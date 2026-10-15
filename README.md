@@ -21,8 +21,10 @@ Saat program dijalankan, pengguna akan diberikan menu utama yang terdiri dari be
    - Menghapus data tim.
 
      <img width="267" height="159" alt="image" src="https://github.com/user-attachments/assets/22e79209-7b98-45e5-9606-19822afb8950" />
+  
      
      <img width="311" height="441" alt="image" src="https://github.com/user-attachments/assets/c5bff1a3-b32d-45cc-ab75-6528dae75305" />
+     
 Pada bagian Manajemen Data Tim pengguna dapat menambahkan Tim sesuai dengan keiinginan user, dalam kasus ini digunakan data-data Tim dari Laga asli yaitu dari NBA. Pengguna dapat menampilkan data tim yang telah ditambahkan sebelumnya, jika belum ada data tim yang tersedia maka output yang akan keluar adalah "Belum ada tim.". Jika pengguna merasa melakukan kesalahan pada proses penambahan data tim pengguna dapat melakukan perubahan pada data tim yang telah ditambahkan sebelumnya. Jika data tim sudah tidak relevan maka pengguna dapat menghapusnya.
 
 2. **Manajemen Pertandingan**
