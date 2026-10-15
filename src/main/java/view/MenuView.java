@@ -12,16 +12,10 @@ import java.util.Scanner;
 
 public class MenuView {
 
-    private Scanner scanner;
-
-    public MenuView() {
-        scanner = new Scanner(System.in);
-    }
+    private final Scanner scanner = new Scanner(System.in);
 
     public void tampilkanMenuUtama() {
-
-        System.out.println();
-        System.out.println("==========================================");
+        System.out.println("\n==========================================");
         System.out.println("     SISTEM MANAJEMEN LIGA BASKET");
         System.out.println("==========================================");
         System.out.println("1. Manajemen Tim");
@@ -33,29 +27,19 @@ public class MenuView {
     }
 
     public int inputInt(String pesan) {
-
         while (true) {
+            System.out.print(pesan);
 
             try {
-
-                System.out.print(pesan);
-                int angka = Integer.parseInt(scanner.nextLine());
-
-                return angka;
-
+                return Integer.parseInt(scanner.nextLine().trim());
             } catch (NumberFormatException e) {
-
-                System.out.println(
-                        "Input harus berupa angka!"
-                );
+                System.out.println("Input harus berupa angka!");
             }
         }
     }
 
     public String inputString(String pesan) {
-
         while (true) {
-
             System.out.print(pesan);
             String input = scanner.nextLine().trim();
 
@@ -63,8 +47,22 @@ public class MenuView {
                 return input;
             }
 
+            System.out.println("Input tidak boleh kosong!");
+        }
+    }
+
+    public String inputTanggal(String pesan) {
+        while (true) {
+            String tanggal = inputString(
+                    pesan + " (YYYY-MM-DD): "
+            );
+
+            if (tanggal.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return tanggal;
+            }
+
             System.out.println(
-                    "Input tidak boleh kosong!"
+                    "Format tanggal harus YYYY-MM-DD."
             );
         }
     }

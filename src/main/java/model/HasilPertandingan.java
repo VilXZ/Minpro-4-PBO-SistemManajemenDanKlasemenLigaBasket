@@ -16,7 +16,6 @@ public class HasilPertandingan {
     private int skorTandang;
     private String namaTimKandang;
     private String namaTimTandang;
-    private String pemenang;
 
     public HasilPertandingan(
             int idHasil,
@@ -32,19 +31,18 @@ public class HasilPertandingan {
         this.skorTandang = skorTandang;
         this.namaTimKandang = namaTimKandang;
         this.namaTimTandang = namaTimTandang;
-
-        tentukanPemenang();
     }
 
-    private void tentukanPemenang() {
-
+    public String getPemenang() {
         if (skorKandang > skorTandang) {
-            pemenang = namaTimKandang;
-        } else if (skorTandang > skorKandang) {
-            pemenang = namaTimTandang;
-        } else {
-            pemenang = "Seri";
+            return namaTimKandang;
         }
+
+        if (skorTandang > skorKandang) {
+            return namaTimTandang;
+        }
+
+        return "Seri";
     }
 
     public int getIdHasil() {
@@ -63,23 +61,20 @@ public class HasilPertandingan {
         return skorTandang;
     }
 
-    public String getPemenang() {
-        return pemenang;
+    public String getNamaTimKandang() {
+        return namaTimKandang;
+    }
+
+    public String getNamaTimTandang() {
+        return namaTimTandang;
     }
 
     @Override
     public String toString() {
-
         return "ID Hasil: " + idHasil
                 + " | Pertandingan: "
-                + namaTimKandang
-                + " vs "
-                + namaTimTandang
-                + " | Skor: "
-                + skorKandang
-                + " - "
-                + skorTandang
-                + " | Pemenang: "
-                + pemenang;
+                + namaTimKandang + " vs " + namaTimTandang
+                + " | Skor: " + skorKandang + " - " + skorTandang
+                + " | Pemenang: " + getPemenang();
     }
 }

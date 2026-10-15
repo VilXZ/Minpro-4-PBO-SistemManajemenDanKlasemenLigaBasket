@@ -8,46 +8,29 @@ package model;
  *
  * @author kidst
  */
+
 public class PertandinganFinal extends Pertandingan {
 
     private String babak;
 
     public PertandinganFinal(
-            int idPertandingan,
+            int id,
             String tanggal,
             String lokasi,
-            String timKandang,
-            String timTandang,
+            int idKandang,
+            int idTandang,
+            String namaKandang,
+            String namaTandang,
             String status,
             String babak) {
 
         super(
-                idPertandingan,
-                tanggal,
-                lokasi,
-                timKandang,
-                timTandang,
-                status
+                id, tanggal, lokasi,
+                idKandang, idTandang,
+                namaKandang, namaTandang, status
         );
 
         this.babak = babak;
-    }
-
-    @Override
-    public String getInfoPertandingan() {
-
-        return "Pertandingan Final | "
-                + getTimKandang()
-                + " vs "
-                + getTimTandang()
-                + " | "
-                + babak
-                + " | "
-                + getTanggal()
-                + " | "
-                + getLokasi()
-                + " | Status: "
-                + getStatus();
     }
 
     public String getBabak() {
@@ -56,5 +39,17 @@ public class PertandinganFinal extends Pertandingan {
 
     public void setBabak(String babak) {
         this.babak = babak;
+    }
+
+    @Override
+    public String getInfoPertandingan() {
+        return "Pertandingan Final"
+                + " | ID: " + getIdPertandingan()
+                + " | " + getNamaTimKandang()
+                + " vs " + getNamaTimTandang()
+                + " | " + babak
+                + " | " + getTanggal()
+                + " | " + getLokasi()
+                + " | Status: " + getStatus();
     }
 }

@@ -34,45 +34,24 @@ public class Klasemen {
         return tim;
     }
 
-    public void setTim(String tim) {
-        this.tim = tim;
-    }
-
     public int getJumlahPertandingan() {
         return jumlahPertandingan;
-    }
-
-    public void setJumlahPertandingan(int jumlahPertandingan) {
-        this.jumlahPertandingan = jumlahPertandingan;
     }
 
     public int getJumlahMenang() {
         return jumlahMenang;
     }
 
-    public void setJumlahMenang(int jumlahMenang) {
-        this.jumlahMenang = jumlahMenang;
-    }
-
     public int getJumlahKalah() {
         return jumlahKalah;
-    }
-
-    public void setJumlahKalah(int jumlahKalah) {
-        this.jumlahKalah = jumlahKalah;
     }
 
     public int getPoin() {
         return poin;
     }
 
-    public void setPoin(int poin) {
-        this.poin = poin;
-    }
-
     @Override
     public String toString() {
-
         return tim
                 + " | Main: " + jumlahPertandingan
                 + " | Menang: " + jumlahMenang

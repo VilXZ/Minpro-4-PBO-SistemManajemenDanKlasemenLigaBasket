@@ -1,722 +1,663 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package controller;
 
-/**
- *
- * @author kidst
- */
-import model.HasilPertandingan;
-import model.Klasemen;
-import model.Pertandingan;
-import model.PertandinganFinal;
-import model.PertandinganLiga;
-import model.Tim;
+import model.dao.HasilPertandinganDAO;
+import model.dao.KlasemenDAO;
+import model.dao.PertandinganDAO;
+import model.dao.TimDAO;
+import model.*;
 import controller.ValidasiInput;
 import view.MenuView;
-
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.util.List;
 
 public class LigaController implements ValidasiInput {
 
-    private MenuView view;
-
-    private ArrayList<Tim> daftarTim;
-    private ArrayList<Pertandingan> daftarPertandingan;
-    private ArrayList<HasilPertandingan> daftarHasil;
-    private ArrayList<Klasemen> daftarKlasemen;
+    private final MenuView view;
+    private final TimDAO timDAO = new TimDAO();
+    private final PertandinganDAO pertandinganDAO =
+            new PertandinganDAO();
+    private final HasilPertandinganDAO hasilDAO =
+            new HasilPertandinganDAO();
+    private final KlasemenDAO klasemenDAO = new KlasemenDAO();
 
     public LigaController(MenuView view) {
-
         this.view = view;
-
-        daftarTim = new ArrayList<>();
-        daftarPertandingan = new ArrayList<>();
-        daftarHasil = new ArrayList<>();
-        daftarKlasemen = new ArrayList<>();
-
-        isiDummyData();
     }
 
     public void jalankan() {
+        boolean jalan = true;
 
-        int pilihan;
-
-        do {
-
+        while (jalan) {
             view.tampilkanMenuUtama();
 
-            pilihan = view.inputInt("Pilih menu: ");
-
-            switch (pilihan) {
-
+            switch (view.inputInt("Pilih menu: ")) {
                 case 1:
                     menuTim();
                     break;
-
                 case 2:
                     menuPertandingan();
                     break;
-
                 case 3:
                     menuHasil();
                     break;
-
                 case 4:
                     tampilkanKlasemen();
                     break;
-
                 case 5:
-                    view.tampilkanPesan(
-                            "Program selesai. Terima kasih!"
-                    );
+                    jalan = false;
                     break;
-
                 default:
-                    view.tampilkanPesan(
-                            "Pilihan menu tidak tersedia!"
-                    );
+                    view.tampilkanPesan("Pilihan tidak tersedia.");
             }
+        }
 
-        } while (pilihan != 5);
-
+        view.tampilkanPesan("Program selesai.");
         view.tutupScanner();
     }
 
+    // ==================== MENU TIM ====================
+
     private void menuTim() {
+        boolean kembali = false;
 
-        int pilihan;
+        while (!kembali) {
+            view.tampilkanPesan(
+                    "\n--- MANAJEMEN TIM ---\n"
+                    + "1. Tambah\n"
+                    + "2. Tampilkan\n"
+                    + "3. Ubah\n"
+                    + "4. Hapus\n"
+                    + "5. Kembali"
+            );
 
-        do {
-
-            System.out.println();
-            System.out.println("===== MANAJEMEN TIM =====");
-            System.out.println("1. Tambah Tim");
-            System.out.println("2. Tampilkan Tim");
-            System.out.println("3. Ubah Tim");
-            System.out.println("4. Hapus Tim");
-            System.out.println("5. Kembali");
-
-            pilihan = view.inputInt("Pilih menu: ");
-
-            switch (pilihan) {
-
+            switch (view.inputInt("Pilih: ")) {
                 case 1:
                     tambahTim();
                     break;
-
                 case 2:
                     tampilkanTim();
                     break;
-
                 case 3:
                     ubahTim();
                     break;
-
                 case 4:
                     hapusTim();
                     break;
-
                 case 5:
+                    kembali = true;
                     break;
-
                 default:
-                    view.tampilkanPesan(
-                            "Pilihan tidak valid!"
-                    );
+                    view.tampilkanPesan("Pilihan tidak tersedia.");
             }
-
-        } while (pilihan != 5);
+        }
     }
 
     private void tambahTim() {
-
-        System.out.println();
-        System.out.println("===== TAMBAH TIM =====");
-
-        int id = view.inputInt("ID Tim: ");
-
-        if (cariTim(id) != null) {
-            view.tampilkanPesan(
-                    "ID Tim sudah digunakan!"
-            );
-            return;
-        }
-
-        String nama = view.inputString("Nama Tim: ");
+        String nama = view.inputString("Nama tim: ");
         String kota = view.inputString("Kota: ");
         String pelatih = view.inputString("Pelatih: ");
 
-        daftarTim.add(
-                new Tim(id, nama, kota, pelatih)
-        );
-
-        view.tampilkanPesan(
-                "Tim berhasil ditambahkan."
-        );
-    }
-
-    private void tampilkanTim() {
-
-        System.out.println();
-        System.out.println("===== DAFTAR TIM =====");
-
-        if (daftarTim.isEmpty()) {
-
+        if (!validasiNama(nama)
+                || !validasiNama(kota)
+                || !validasiNama(pelatih)) {
             view.tampilkanPesan(
-                    "Belum ada data tim."
+                    "Nama, kota, dan pelatih tidak boleh kosong."
             );
-
             return;
         }
 
-        for (Tim tim : daftarTim) {
-            System.out.println(tim);
+        try {
+            timDAO.tambah(new Tim(0, nama, kota, pelatih));
+            view.tampilkanPesan("Tim berhasil ditambahkan.");
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal menambah tim: " + e.getMessage()
+            );
+        }
+    }
+
+    private void tampilkanTim() {
+        try {
+            List<Tim> data = timDAO.semua();
+
+            if (data.isEmpty()) {
+                view.tampilkanPesan("Belum ada tim.");
+            }
+
+            for (Tim t : data) {
+                view.tampilkanPesan(t.toString());
+            }
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal membaca tim: " + e.getMessage()
+            );
         }
     }
 
     private void ubahTim() {
+        int id = view.inputInt("ID tim yang diubah: ");
 
-        tampilkanTim();
+        try {
+            Tim tim = timDAO.cari(id);
 
-        int id = view.inputInt(
-                "Masukkan ID tim yang ingin diubah: "
-        );
+            if (tim == null) {
+                view.tampilkanPesan("Tim tidak ditemukan.");
+                return;
+            }
 
-        Tim tim = cariTim(id);
+            String nama = view.inputString("Nama tim baru: ");
+            String kota = view.inputString("Kota baru: ");
+            String pelatih = view.inputString("Pelatih baru: ");
 
-        if (tim == null) {
+            if (!validasiNama(nama)
+                    || !validasiNama(kota)
+                    || !validasiNama(pelatih)) {
+                view.tampilkanPesan("Data tidak boleh kosong.");
+                return;
+            }
+
+            tim.setNamaTim(nama);
+            tim.setKota(kota);
+            tim.setPelatih(pelatih);
 
             view.tampilkanPesan(
-                    "Tim tidak ditemukan."
+                    timDAO.ubah(tim)
+                    ? "Tim berhasil diubah."
+                    : "Tim tidak berubah."
             );
 
-            return;
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal mengubah tim: " + e.getMessage()
+            );
         }
-
-        String nama = view.inputString(
-                "Nama Tim baru: "
-        );
-
-        String kota = view.inputString(
-                "Kota baru: "
-        );
-
-        String pelatih = view.inputString(
-                "Pelatih baru: "
-        );
-
-        tim.setNamaTim(nama);
-        tim.setKota(kota);
-        tim.setPelatih(pelatih);
-
-        view.tampilkanPesan(
-                "Data tim berhasil diubah."
-        );
     }
 
     private void hapusTim() {
+        int id = view.inputInt("ID tim yang dihapus: ");
 
-        tampilkanTim();
-
-        int id = view.inputInt(
-                "Masukkan ID tim yang ingin dihapus: "
-        );
-
-        Tim tim = cariTim(id);
-
-        if (tim == null) {
+        try {
             view.tampilkanPesan(
-                    "Tim tidak ditemukan."
+                    timDAO.hapus(id)
+                    ? "Tim berhasil dihapus."
+                    : "Tim tidak ditemukan."
             );
-            return;
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Tim tidak dapat dihapus. Pastikan tim tidak "
+                    + "digunakan pertandingan. Detail: "
+                    + e.getMessage()
+            );
         }
-
-        daftarTim.remove(tim);
-
-        view.tampilkanPesan(
-                "Tim berhasil dihapus."
-        );
     }
 
-    private Tim cariTim(int id) {
-
-        for (Tim tim : daftarTim) {
-            if (tim.getIdTim() == id) {
-                return tim;
-            }
-        }
-        return null;
-    }
+    // ==================== MENU PERTANDINGAN ====================
 
     private void menuPertandingan() {
+        boolean kembali = false;
 
-        int pilihan;
+        while (!kembali) {
+            view.tampilkanPesan(
+                    "\n--- MANAJEMEN PERTANDINGAN ---\n"
+                    + "1. Tambah\n"
+                    + "2. Tampilkan\n"
+                    + "3. Ubah\n"
+                    + "4. Hapus\n"
+                    + "5. Kembali"
+            );
 
-        do {
-
-            System.out.println();
-            System.out.println("===== MANAJEMEN PERTANDINGAN =====");
-            System.out.println("1. Tambah Pertandingan");
-            System.out.println("2. Tampilkan Pertandingan");
-            System.out.println("3. Hapus Pertandingan");
-            System.out.println("4. Kembali");
-
-            pilihan = view.inputInt("Pilih menu: ");
-
-            switch (pilihan) {
-
+            switch (view.inputInt("Pilih: ")) {
                 case 1:
                     tambahPertandingan();
                     break;
-
                 case 2:
                     tampilkanPertandingan();
                     break;
-
                 case 3:
+                    ubahPertandingan();
+                    break;
+                case 4:
                     hapusPertandingan();
                     break;
-
-                case 4:
+                case 5:
+                    kembali = true;
                     break;
-
                 default:
-                    view.tampilkanPesan(
-                            "Pilihan tidak valid!"
-                    );
+                    view.tampilkanPesan("Pilihan tidak tersedia.");
             }
-        } while (pilihan != 4);
+        }
     }
 
     private void tambahPertandingan() {
+        try {
+            List<Tim> tim = timDAO.semua();
 
-        if (daftarTim.size() < 2) {
-            view.tampilkanPesan(
-                    "Minimal harus ada 2 tim."
-            );
-            return;
-        }
+            if (tim.size() < 2) {
+                view.tampilkanPesan("Minimal harus ada 2 tim.");
+                return;
+            }
 
-        tampilkanTim();
+            for (Tim t : tim) {
+                view.tampilkanPesan(t.toString());
+            }
 
-        System.out.println();
-        System.out.println("===== TAMBAH PERTANDINGAN =====");
+            int idKandang = view.inputInt("ID tim kandang: ");
+            int idTandang = view.inputInt("ID tim tandang: ");
 
-        int id = view.inputInt(
-                "ID Pertandingan: "
-        );
+            if (idKandang == idTandang) {
+                view.tampilkanPesan(
+                        "Tim kandang dan tim tandang tidak boleh sama."
+                );
+                return;
+            }
 
-        if (cariPertandingan(id) != null) {
-            view.tampilkanPesan(
-                    "ID pertandingan sudah digunakan!"
-            );
-            return;
-        }
+            Tim kandang = timDAO.cari(idKandang);
+            Tim tandang = timDAO.cari(idTandang);
 
-        String tanggal = view.inputString(
-                "Tanggal: "
-        );
+            if (kandang == null || tandang == null) {
+                view.tampilkanPesan("ID tim tidak ditemukan.");
+                return;
+            }
 
-        String lokasi = view.inputString(
-                "Lokasi: "
-        );
-
-        int idKandang = view.inputInt(
-                "ID Tim Kandang: "
-        );
-
-        Tim kandang = cariTim(idKandang);
-
-        if (kandang == null) {
-            view.tampilkanPesan(
-                    "Tim kandang tidak ditemukan."
-            );
-            return;
-        }
-        int idTandang = view.inputInt(
-                "ID Tim Tandang: "
-        );
-
-        Tim tandang = cariTim(idTandang);
-
-        if (tandang == null) {
-            view.tampilkanPesan(
-                    "Tim tandang tidak ditemukan."
-            );
-
-            return;
-        }
-
-        if (idKandang == idTandang) {
-            view.tampilkanPesan(
-                    "Tim kandang dan tim tandang tidak boleh sama."
-            );
-
-            return;
-        }
-
-        System.out.println();
-        System.out.println("Jenis pertandingan:");
-        System.out.println("1. Liga");
-        System.out.println("2. Final");
-
-        int jenis = view.inputInt(
-                "Pilih jenis: "
-        );
-        
-        Pertandingan pertandingan;
-
-        if (jenis == 1) {
-
-            int pekan = view.inputInt(
-                    "Pekan ke: "
-            );
-            pertandingan = new PertandinganLiga(
-                    id,
-                    tanggal,
-                    lokasi,
-                    kandang.getNamaTim(),
-                    tandang.getNamaTim(),
-                    "Belum Dimainkan",
-                    pekan
-            );
-
-        } else if (jenis == 2) {
-
-            String babak = view.inputString(
-                    "Babak final: "
-            );
-            pertandingan = new PertandinganFinal(
-                    id,
-                    tanggal,
-                    lokasi,
-                    kandang.getNamaTim(),
-                    tandang.getNamaTim(),
-                    "Belum Dimainkan",
-                    babak
-            );
-
-        } else {
+            String tanggal =
+                    view.inputTanggal("Tanggal pertandingan");
+            String lokasi = view.inputString("Lokasi: ");
 
             view.tampilkanPesan(
-                    "Jenis pertandingan tidak valid."
+                    "Jenis pertandingan: 1. Liga  2. Final"
             );
-            return;
-        }
-        daftarPertandingan.add(pertandingan);
 
-        view.tampilkanPesan(
-                "Pertandingan berhasil ditambahkan."
-        );
+            int jenis = view.inputInt("Pilih jenis: ");
+            Pertandingan p;
+
+            if (jenis == 1) {
+                int pekan = view.inputInt("Pekan ke: ");
+
+                if (!validasiAngka(pekan) || pekan < 1) {
+                    view.tampilkanPesan(
+                            "Pekan harus minimal 1."
+                    );
+                    return;
+                }
+
+                p = new PertandinganLiga(
+                        0, tanggal, lokasi,
+                        idKandang, idTandang,
+                        kandang.getNamaTim(),
+                        tandang.getNamaTim(),
+                        "Belum Dimainkan", pekan
+                );
+
+            } else if (jenis == 2) {
+                String babak = view.inputString("Babak final: ");
+
+                p = new PertandinganFinal(
+                        0, tanggal, lokasi,
+                        idKandang, idTandang,
+                        kandang.getNamaTim(),
+                        tandang.getNamaTim(),
+                        "Belum Dimainkan", babak
+                );
+
+            } else {
+                view.tampilkanPesan(
+                        "Jenis pertandingan tidak valid."
+                );
+                return;
+            }
+
+            view.tampilkanPesan(
+                    pertandinganDAO.tambah(p)
+                    ? "Pertandingan berhasil ditambahkan."
+                    : "Pertandingan gagal ditambahkan."
+            );
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal mengelola pertandingan: "
+                    + e.getMessage()
+            );
+        }
     }
 
     private void tampilkanPertandingan() {
+        try {
+            List<Pertandingan> data = pertandinganDAO.semua();
 
-        System.out.println();
-        System.out.println("===== DAFTAR PERTANDINGAN =====");
+            if (data.isEmpty()) {
+                view.tampilkanPesan("Belum ada pertandingan.");
+            }
 
-        if (daftarPertandingan.isEmpty()) {
+            // Polymorphism: method override dipanggil melalui
+            // referensi dengan tipe induk Pertandingan.
+            for (Pertandingan p : data) {
+                view.tampilkanPesan(p.getInfoPertandingan());
+            }
+
+        } catch (SQLException e) {
             view.tampilkanPesan(
-                    "Belum ada pertandingan."
+                    "Gagal membaca pertandingan: "
+                    + e.getMessage()
             );
-            return;
         }
+    }
 
-        for (Pertandingan pertandingan : daftarPertandingan) {
-            System.out.println(
-                    pertandingan.getInfoPertandingan()
+    private void ubahPertandingan() {
+        tampilkanPertandingan();
+
+        int id = view.inputInt(
+                "ID pertandingan yang diubah: "
+        );
+
+        try {
+            Pertandingan lama = pertandinganDAO.cari(id);
+
+            if (lama == null) {
+                view.tampilkanPesan(
+                        "Pertandingan tidak ditemukan."
+                );
+                return;
+            }
+
+            List<Tim> tim = timDAO.semua();
+
+            for (Tim t : tim) {
+                view.tampilkanPesan(t.toString());
+            }
+
+            int idK = view.inputInt("ID tim kandang baru: ");
+            int idT = view.inputInt("ID tim tandang baru: ");
+
+            if (idK == idT) {
+                view.tampilkanPesan(
+                        "Kedua tim harus berbeda."
+                );
+                return;
+            }
+
+            Tim kandang = timDAO.cari(idK);
+            Tim tandang = timDAO.cari(idT);
+
+            if (kandang == null || tandang == null) {
+                view.tampilkanPesan("ID tim tidak ditemukan.");
+                return;
+            }
+
+            String tanggal = view.inputTanggal("Tanggal baru");
+            String lokasi = view.inputString("Lokasi baru: ");
+
+            Pertandingan baru;
+
+            if (lama instanceof PertandinganLiga) {
+                int pekan = view.inputInt("Pekan baru: ");
+
+                if (pekan < 1) {
+                    view.tampilkanPesan(
+                            "Pekan minimal 1."
+                    );
+                    return;
+                }
+
+                baru = new PertandinganLiga(
+                        id, tanggal, lokasi, idK, idT,
+                        kandang.getNamaTim(),
+                        tandang.getNamaTim(),
+                        lama.getStatus(), pekan
+                );
+
+            } else {
+                String babak = view.inputString("Babak baru: ");
+
+                baru = new PertandinganFinal(
+                        id, tanggal, lokasi, idK, idT,
+                        kandang.getNamaTim(),
+                        tandang.getNamaTim(),
+                        lama.getStatus(), babak
+                );
+            }
+
+            // Jika pertandingan sudah punya hasil, jangan ubah
+            // pasangan tim/tanggal sebelum hasilnya dihapus.
+            if (hasilDAO.pertandinganPunyaHasil(id)) {
+                view.tampilkanPesan(
+                        "Pertandingan sudah memiliki hasil. "
+                        + "Hapus hasilnya terlebih dahulu sebelum "
+                        + "mengubah tim atau tanggal."
+                );
+                return;
+            }
+
+            view.tampilkanPesan(
+                    pertandinganDAO.ubah(baru)
+                    ? "Pertandingan berhasil diubah."
+                    : "Tidak ada perubahan."
+            );
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal mengubah pertandingan: "
+                    + e.getMessage()
             );
         }
     }
 
     private void hapusPertandingan() {
-
-        tampilkanPertandingan();
-
         int id = view.inputInt(
-                "ID pertandingan yang ingin dihapus: "
+                "ID pertandingan yang dihapus: "
         );
 
-        Pertandingan pertandingan =
-                cariPertandingan(id);
-
-        if (pertandingan == null) {
+        try {
             view.tampilkanPesan(
-                    "Pertandingan tidak ditemukan."
+                    pertandinganDAO.hapus(id)
+                    ? "Pertandingan dan hasil terkait berhasil dihapus."
+                    : "Pertandingan tidak ditemukan."
             );
-            return;
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal menghapus pertandingan: "
+                    + e.getMessage()
+            );
         }
-
-        daftarPertandingan.remove(pertandingan);
-
-        view.tampilkanPesan(
-                "Pertandingan berhasil dihapus."
-        );
     }
 
-    private Pertandingan cariPertandingan(int id) {
-
-        for (Pertandingan pertandingan : daftarPertandingan) {
-
-            if (pertandingan.getIdPertandingan() == id) {
-                return pertandingan;
-            }
-        }
-        return null;
-    }
+    // ==================== MENU HASIL ====================
 
     private void menuHasil() {
+        boolean kembali = false;
 
-        int pilihan;
-
-        do {
-
-            System.out.println();
-            System.out.println("===== HASIL PERTANDINGAN =====");
-            System.out.println("1. Tambah Hasil");
-            System.out.println("2. Tampilkan Hasil");
-            System.out.println("3. Kembali");
-
-            pilihan = view.inputInt(
-                    "Pilih menu: "
+        while (!kembali) {
+            view.tampilkanPesan(
+                    "\n--- MANAJEMEN HASIL ---\n"
+                    + "1. Tambah\n"
+                    + "2. Tampilkan\n"
+                    + "3. Ubah\n"
+                    + "4. Hapus\n"
+                    + "5. Kembali"
             );
 
-            switch (pilihan) {
-
+            switch (view.inputInt("Pilih: ")) {
                 case 1:
                     tambahHasil();
                     break;
-
                 case 2:
                     tampilkanHasil();
                     break;
-
                 case 3:
+                    ubahHasil();
                     break;
-
+                case 4:
+                    hapusHasil();
+                    break;
+                case 5:
+                    kembali = true;
+                    break;
                 default:
-                    view.tampilkanPesan("Pilihan tidak valid.");
+                    view.tampilkanPesan("Pilihan tidak tersedia.");
             }
-        } while (pilihan != 3);
+        }
     }
 
     private void tambahHasil() {
+        try {
+            tampilkanPertandingan();
 
-        tampilkanPertandingan();
+            int idPertandingan = view.inputInt(
+                    "ID pertandingan yang diberi hasil: "
+            );
 
-        int idPertandingan = view.inputInt(
-                "ID Pertandingan: "
-        );
+            Pertandingan p = pertandinganDAO.cari(idPertandingan);
 
-        Pertandingan pertandingan =
-                cariPertandingan(idPertandingan);
-
-        if (pertandingan == null) {
-            view.tampilkanPesan("Pertandingan tidak ditemukan.");
-            return;
-        }
-
-        int idHasil = view.inputInt("ID Hasil: ");
-
-        int skorKandang = view.inputInt("Skor tim kandang: ");
-
-        int skorTandang = view.inputInt("Skor tim tandang: ");
-
-        if (!validasiSkor(skorKandang)
-                || !validasiSkor(skorTandang)) {
-
-            view.tampilkanPesan("Skor tidak boleh negatif.");
-            return;
-        }
-
-        HasilPertandingan hasil =
-                new HasilPertandingan(
-                        idHasil, idPertandingan, skorKandang, skorTandang, pertandingan.getTimKandang(), pertandingan.getTimTandang()
+            if (p == null) {
+                view.tampilkanPesan(
+                        "Pertandingan tidak ditemukan."
                 );
+                return;
+            }
 
-        daftarHasil.add(hasil);
+            if (hasilDAO.pertandinganPunyaHasil(idPertandingan)) {
+                view.tampilkanPesan(
+                        "Pertandingan ini sudah memiliki hasil. "
+                        + "Gunakan menu Ubah."
+                );
+                return;
+            }
 
-        pertandingan.setStatus("Selesai");
+            int skorK = view.inputInt("Skor tim kandang: ");
+            int skorT = view.inputInt("Skor tim tandang: ");
 
-        view.tampilkanPesan("Hasil berhasil ditambahkan.");
+            if (!validasiSkor(skorK)
+                    || !validasiSkor(skorT)) {
+                view.tampilkanPesan(
+                        "Skor tidak boleh negatif."
+                );
+                return;
+            }
 
-        view.tampilkanPesan("Pemenang otomatis: " + hasil.getPemenang());
+            view.tampilkanPesan(
+                    hasilDAO.tambah(idPertandingan, skorK, skorT)
+                    ? "Hasil berhasil ditambahkan."
+                    : "Hasil gagal ditambahkan."
+            );
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal menambah hasil: " + e.getMessage()
+            );
+        }
     }
 
     private void tampilkanHasil() {
+        try {
+            List<HasilPertandingan> data = hasilDAO.semua();
 
-        System.out.println();
-        System.out.println("===== DAFTAR HASIL =====");
+            if (data.isEmpty()) {
+                view.tampilkanPesan(
+                        "Belum ada hasil pertandingan."
+                );
+            }
 
-        if (daftarHasil.isEmpty()) {
-            view.tampilkanPesan("Belum ada hasil pertandingan.");
+            for (HasilPertandingan h : data) {
+                view.tampilkanPesan(h.toString());
+            }
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal membaca hasil: " + e.getMessage()
+            );
+        }
+    }
+
+    private void ubahHasil() {
+        tampilkanHasil();
+
+        int id = view.inputInt("ID hasil yang diubah: ");
+        int skorK = view.inputInt("Skor kandang baru: ");
+        int skorT = view.inputInt("Skor tandang baru: ");
+
+        if (!validasiSkor(skorK)
+                || !validasiSkor(skorT)) {
+            view.tampilkanPesan(
+                    "Skor tidak boleh negatif."
+            );
             return;
         }
 
-        for (HasilPertandingan hasil : daftarHasil) {
-            System.out.println(hasil);
+        try {
+            view.tampilkanPesan(
+                    hasilDAO.ubah(id, skorK, skorT)
+                    ? "Hasil berhasil diubah."
+                    : "ID hasil tidak ditemukan."
+            );
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal mengubah hasil: " + e.getMessage()
+            );
         }
     }
+
+    private void hapusHasil() {
+        int id = view.inputInt("ID hasil yang dihapus: ");
+
+        try {
+            view.tampilkanPesan(
+                    hasilDAO.hapus(id)
+                    ? "Hasil berhasil dihapus."
+                    : "ID hasil tidak ditemukan."
+            );
+
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal menghapus hasil: " + e.getMessage()
+            );
+        }
+    }
+
+    // ==================== KLASEMEN ====================
 
     private void tampilkanKlasemen() {
+        try {
+            List<Klasemen> data = klasemenDAO.semua();
 
-        System.out.println();
-        System.out.println("===== KLASEMEN =====");
-
-        if (daftarTim.isEmpty()) {
-
-            view.tampilkanPesan("Belum ada data tim.");
-            return;
-        }
-
-        daftarKlasemen.clear();
-
-        for (Tim tim : daftarTim) {
-
-            int main = 0;
-            int menang = 0;
-            int kalah = 0;
-            int poin = 0;
-
-            for (HasilPertandingan hasil : daftarHasil) {
-
-                Pertandingan pertandingan =
-                        cariPertandingan(
-                                hasil.getIdPertandingan()
-                        );
-
-                if (pertandingan == null) {
-                    continue;
-                }
-
-                boolean timKandang =
-                        pertandingan.getTimKandang()
-                                .equals(tim.getNamaTim());
-
-                boolean timTandang =
-                        pertandingan.getTimTandang()
-                                .equals(tim.getNamaTim());
-
-                if (!timKandang && !timTandang) {
-                    continue;
-                }
-
-                main++;
-
-                if (hasil.getPemenang()
-                        .equals(tim.getNamaTim())) {
-
-                    menang++;
-                    poin += 2;
-
-                } else if (hasil.getPemenang()
-                        .equals("Seri")) {
-
-                    poin += 1;
-
-                } else {
-
-                    kalah++;
-                }
+            if (data.isEmpty()) {
+                view.tampilkanPesan("Belum ada tim.");
+                return;
             }
 
-            daftarKlasemen.add(
-                    new Klasemen(
-                            tim.getNamaTim(), main, menang, kalah, poin
-                    )
+            view.tampilkanPesan(
+                    "\n--- KLASEMEN LIGA BASKET ---"
             );
-        }
 
-        for (int i = 0;
-             i < daftarKlasemen.size() - 1;
-             i++) {
+            int posisi = 1;
 
-            for (int j = i + 1;
-                 j < daftarKlasemen.size();
-                 j++) {
-
-                if (daftarKlasemen.get(j).getPoin()
-                        > daftarKlasemen.get(i).getPoin()) {
-
-                    Klasemen temp =
-                            daftarKlasemen.get(i);
-
-                    daftarKlasemen.set(
-                            i,
-                            daftarKlasemen.get(j)
-                    );
-
-                    daftarKlasemen.set(
-                            j,
-                            temp
-                    );
-                }
+            for (Klasemen k : data) {
+                view.tampilkanPesan(posisi++ + ". " + k);
             }
-        }
 
-        int posisi = 1;
-
-        for (Klasemen klasemen : daftarKlasemen) {
-
-            System.out.println(
-                    posisi + ". " + klasemen
+        } catch (SQLException e) {
+            view.tampilkanPesan(
+                    "Gagal menghitung klasemen: "
+                    + e.getMessage()
             );
-            posisi++;
         }
     }
 
-    private void isiDummyData() {
-
-        Tim lakers = new Tim(
-                1, "Los Angeles Lakers", "Los Angeles", "JJ Redick"
-        );
-
-        Tim warriors = new Tim(
-                2, "Golden State Warriors", "San Francisco", "Steve Kerr"
-        );
-
-        Tim celtics = new Tim(
-                3, "Boston Celtics", "Boston", "Joe Mazzulla"
-        );
-
-        daftarTim.add(lakers);
-        daftarTim.add(warriors);
-        daftarTim.add(celtics);
-
-        Pertandingan pertandingan =
-                new PertandinganLiga(
-                        1,"22-10-2025","Crypto.com Arena","Los Angeles Lakers","Golden State Warriors","Selesai",1
-                );
-
-        daftarPertandingan.add(pertandingan);
-
-        HasilPertandingan hasil =
-                new HasilPertandingan(
-                        1, 1, 120, 115, "Los Angeles Lakers", "Golden State Warriors"
-                );
-
-        daftarHasil.add(hasil);
-    }
+    // ==================== IMPLEMENTASI INTERFACE ====================
 
     @Override
     public boolean validasiNama(String nama) {
-
-        return nama != null
-                && !nama.trim().isEmpty();
+        return nama != null && !nama.trim().isEmpty();
     }
 
     @Override
     public boolean validasiAngka(int angka) {
-
         return angka >= 0;
     }
 
     @Override
     public boolean validasiSkor(int skor) {
-
         return skor >= 0;
     }
 }

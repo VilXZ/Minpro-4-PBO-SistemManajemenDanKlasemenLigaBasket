@@ -8,37 +8,43 @@ package model;
  *
  * @author kidst
  */
+
 public abstract class Pertandingan {
 
     private int idPertandingan;
     private String tanggal;
     private String lokasi;
-    private String timKandang;
-    private String timTandang;
+    private int idTimKandang;
+    private int idTimTandang;
+    private String namaTimKandang;
+    private String namaTimTandang;
     private String status;
 
     public Pertandingan(
             int idPertandingan,
             String tanggal,
             String lokasi,
-            String timKandang,
-            String timTandang,
+            int idTimKandang,
+            int idTimTandang,
+            String namaTimKandang,
+            String namaTimTandang,
             String status) {
 
         this.idPertandingan = idPertandingan;
         this.tanggal = tanggal;
         this.lokasi = lokasi;
-        this.timKandang = timKandang;
-        this.timTandang = timTandang;
+        this.idTimKandang = idTimKandang;
+        this.idTimTandang = idTimTandang;
+        this.namaTimKandang = namaTimKandang;
+        this.namaTimTandang = namaTimTandang;
         this.status = status;
     }
 
     public abstract String getInfoPertandingan();
 
-    // Overloading
+    // Overloading: nama method sama, parameter berbeda.
     public String getInfoPertandingan(boolean tampilLokasi) {
-
-        String info = timKandang + " vs " + timTandang;
+        String info = namaTimKandang + " vs " + namaTimTandang;
 
         if (tampilLokasi) {
             info += " | Lokasi: " + lokasi;
@@ -71,20 +77,36 @@ public abstract class Pertandingan {
         this.lokasi = lokasi;
     }
 
-    public String getTimKandang() {
-        return timKandang;
+    public int getIdTimKandang() {
+        return idTimKandang;
     }
 
-    public void setTimKandang(String timKandang) {
-        this.timKandang = timKandang;
+    public void setIdTimKandang(int idTimKandang) {
+        this.idTimKandang = idTimKandang;
     }
 
-    public String getTimTandang() {
-        return timTandang;
+    public int getIdTimTandang() {
+        return idTimTandang;
     }
 
-    public void setTimTandang(String timTandang) {
-        this.timTandang = timTandang;
+    public void setIdTimTandang(int idTimTandang) {
+        this.idTimTandang = idTimTandang;
+    }
+
+    public String getNamaTimKandang() {
+        return namaTimKandang;
+    }
+
+    public void setNamaTimKandang(String namaTimKandang) {
+        this.namaTimKandang = namaTimKandang;
+    }
+
+    public String getNamaTimTandang() {
+        return namaTimTandang;
+    }
+
+    public void setNamaTimTandang(String namaTimTandang) {
+        this.namaTimTandang = namaTimTandang;
     }
 
     public String getStatus() {

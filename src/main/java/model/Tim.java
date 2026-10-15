@@ -4,12 +4,11 @@
  */
 package model;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author kidst
  */
+
 public class Tim {
 
     private int idTim;
@@ -17,12 +16,7 @@ public class Tim {
     private String kota;
     private String pelatih;
 
-    public Tim(
-            int idTim,
-            String namaTim,
-            String kota,
-            String pelatih) {
-
+    public Tim(int idTim, String namaTim, String kota, String pelatih) {
         this.idTim = idTim;
         this.namaTim = namaTim;
         this.kota = kota;
@@ -63,7 +57,6 @@ public class Tim {
 
     @Override
     public String toString() {
-
         return "ID: " + idTim
                 + " | Tim: " + namaTim
                 + " | Kota: " + kota
