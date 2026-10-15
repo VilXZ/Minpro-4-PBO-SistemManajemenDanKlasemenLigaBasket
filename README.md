@@ -69,3 +69,136 @@ Inheritance diterapkan pada class `Pertandingan` sebagai Parent dengan `Pertandi
 ## Overriding dan Overloading
 
 Overriding dan Overloading diterapkan pada subclass PertandinganLiga dan PertandinganFinal tetapi belum sepenuhnya dimanfaatkan atau diterapkan.
+
+## Integrasi Database MySQL
+
+Pada tahap pengembangan selanjutnya, program diintegrasikan dengan database MySQL untuk menyimpan data secara permanen. Sebelumnya, program menggunakan ArrayList sebagai media penyimpanan data selama program berjalan. Setelah integrasi database, data utama dikelola melalui query SQL menggunakan JDBC.
+
+Database yang digunakan
+
+Nama database: ligabasket
+
+Database digunakan untuk menyimpan informasi mengenai:
+
+- Data tim.
+
+- Data pertandingan.
+
+- Hasil pertandingan.
+
+- Data yang diperlukan untuk menampilkan klasemen liga.
+
+- Class DatabaseConnection
+
+Class DatabaseConnection bertanggung jawab untuk membuat koneksi antara aplikasi Java dengan database MySQL menggunakan JDBC.
+
+## Class DbKonek
+
+Class DatabaseConnection bertanggung jawab untuk membuat koneksi antara aplikasi Java dengan database MySQL menggunakan JDBC.
+
+Contoh konfigurasi koneksi:
+
+<img width="659" height="382" alt="image" src="https://github.com/user-attachments/assets/c79d26a9-387a-4f38-9b64-1a60ed5fa92e" />
+
+Konfigurasi port harus disesuaikan apabila MySQL menggunakan port selain 3306.
+
+## Penggunaan DAO
+
+DAO (Data Access Object) digunakan untuk memisahkan proses akses database dari logika pengelolaan program.
+
+Setiap DAO bertanggung jawab atas operasi database untuk entitas tertentu, seperti:
+
+TimDAO: mengelola data tim.
+
+PertandinganDAO: mengelola data pertandingan.
+
+HasilPertandinganDAO: mengelola hasil pertandingan.
+
+KlasemenDAO: mengambil atau mengolah data klasemen sesuai implementasi program.
+
+Operasi database dilakukan menggunakan JDBC, seperti Connection, PreparedStatement, dan ResultSet. Penggunaan PreparedStatement membantu memisahkan parameter input dari perintah SQL.
+
+Penyimpanan Data
+
+Setelah database terhubung, data yang ditambahkan melalui program dapat disimpan ke dalam MySQL dan tetap tersedia setelah program ditutup, selama data tidak dihapus dan database tetap tersedia.
+
+Dengan demikian, penyimpanan data tidak lagi hanya bergantung pada keberadaan objek di memori program seperti pada penggunaan ArrayList.
+
+## Penentuan Pemenang Otomatis
+
+Pemenang pertandingan ditentukan berdasarkan skor akhir kedua tim, bukan ditentukan secara manual melalui input nama pemenang.
+
+Aturan penentuan pemenang:
+
+- Jika skor tim kandang lebih tinggi daripada tim tandang, tim kandang menjadi pemenang.
+
+- Jika skor tim tandang lebih tinggi daripada tim kandang, tim tandang menjadi pemenang.
+
+- Jika skor sama, pertandingan dianggap seri oleh logika dasar, kecuali program menerapkan aturan tambahan untuk overtime atau menolak skor akhir seri.
+
+Penentuan otomatis ini membantu menjaga konsistensi antara skor pertandingan, data hasil pertandingan, dan informasi pemenang yang ditampilkan.
+
+Konsistensi dan Perbaikan Program
+
+Beberapa hal yang menjadi perhatian dalam pengembangan program adalah:
+
+- Menghindari dead code, yaitu method atau bagian program yang tidak digunakan.
+
+- Menggunakan method untuk menampilkan data agar logika tampilan tidak ditulis berulang kali pada beberapa bagian menu.
+
+- Menjaga konsistensi informasi pemenang pada menu pertandingan dan menu hasil pertandingan.
+
+- Memastikan method overriding benar-benar digunakan melalui pemanggilan polymorphism, bukan hanya didefinisikan tanpa pernah dipanggil.
+
+- Memisahkan operasi database, logika program, dan tampilan sesuai tanggung jawab masing-masing.
+
+- Menangani kesalahan input serta exception database agar program dapat memberikan pesan yang mudah dipahami pengguna.
+
+Cara Menjalankan Program
+
+1. **Persiapan**
+
+Pastikan perangkat lunak berikut tersedia:
+
+Java Development Kit (JDK).
+
+Apache NetBeans atau IDE Java lainnya.
+
+Apache Maven.
+
+MySQL Server dan MySQL CLI.
+
+MySQL Connector/J sebagai JDBC driver.
+
+2. **Membuat Database**
+
+Jalankan MySQL CLI, kemudian jalankan file database.sql yang berisi perintah pembuatan database, tabel, dan constraint yang diperlukan.
+
+Pastikan database ligabasket beserta tabel-tabel yang dibutuhkan sudah tersedia.
+
+<img width="678" height="366" alt="image" src="https://github.com/user-attachments/assets/e949383e-f9f4-4f5a-837a-c5691dd8f0ad" />
+
+<img width="1384" height="938" alt="image" src="https://github.com/user-attachments/assets/62f118d2-01dc-4ca8-addc-8ddab4ecbb35" />
+
+<img width="714" height="672" alt="image" src="https://github.com/user-attachments/assets/748e681a-fcba-4e74-b393-8b5d8eea84a9" />
+
+<img width="1109" height="412" alt="image" src="https://github.com/user-attachments/assets/4ed266d8-7bea-4bde-abc1-88f933a6d5d9" />
+
+
+3. **Mengatur Koneksi**
+
+Periksa konfigurasi pada DatabaseConnection.java, terutama URL JDBC, username, password, dan port MySQL.
+
+Pastikan MySQL Server sedang berjalan dan nama database pada URL sama dengan nama database yang dibuat.
+
+4. **Menjalankan Program**
+
+Buka proyek melalui NetBeans, kemudian lakukan Clean and Build Project. Setelah proses build berhasil, jalankan class Main.java.
+<img width="954" height="824" alt="image" src="https://github.com/user-attachments/assets/136f60eb-7fef-4c1a-9523-8698cc14c1b5" />
+
+
+5. **Menggunakan Menu**
+
+Pilih menu yang tersedia untuk mengelola data tim, pertandingan, hasil pertandingan, dan klasemen. Masukkan pilihan sesuai instruksi yang ditampilkan.
+
+Program akan terus menampilkan menu sampai pengguna memilih menu keluar.
